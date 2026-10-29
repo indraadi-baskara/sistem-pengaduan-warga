@@ -28,3 +28,4 @@ logs
 # lapor-warga local blobs
 .data/
 data/lapor.db
+.netlify/
