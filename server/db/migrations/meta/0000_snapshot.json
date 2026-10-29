@@ -1,0 +1,486 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "b1f2538c-db1e-4690-8dbe-4e2632277caa",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "kategori": {
+      "name": "kategori",
+      "columns": {
+        "id_kategori": {
+          "name": "id_kategori",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "kategori_nama_idx": {
+          "name": "kategori_nama_idx",
+          "columns": [
+            "nama"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "lampiran": {
+      "name": "lampiran",
+      "columns": {
+        "id_lampiran": {
+          "name": "id_lampiran",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "id_pengaduan": {
+          "name": "id_pengaduan",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nama_file": {
+          "name": "nama_file",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kunci_storage": {
+          "name": "kunci_storage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ukuran": {
+          "name": "ukuran",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "lampiran_pengaduan_idx": {
+          "name": "lampiran_pengaduan_idx",
+          "columns": [
+            "id_pengaduan"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "lampiran_id_pengaduan_pengaduan_id_pengaduan_fk": {
+          "name": "lampiran_id_pengaduan_pengaduan_id_pengaduan_fk",
+          "tableFrom": "lampiran",
+          "tableTo": "pengaduan",
+          "columnsFrom": [
+            "id_pengaduan"
+          ],
+          "columnsTo": [
+            "id_pengaduan"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "pengaduan": {
+      "name": "pengaduan",
+      "columns": {
+        "id_pengaduan": {
+          "name": "id_pengaduan",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "kode_pelacakan": {
+          "name": "kode_pelacakan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id_kategori": {
+          "name": "id_kategori",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id_pelapor": {
+          "name": "id_pelapor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lokasi": {
+          "name": "lokasi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "deskripsi": {
+          "name": "deskripsi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'diterima'"
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "pengaduan_kode_idx": {
+          "name": "pengaduan_kode_idx",
+          "columns": [
+            "kode_pelacakan"
+          ],
+          "isUnique": true
+        },
+        "pengaduan_status_idx": {
+          "name": "pengaduan_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "pengaduan_kategori_idx": {
+          "name": "pengaduan_kategori_idx",
+          "columns": [
+            "id_kategori"
+          ],
+          "isUnique": false
+        },
+        "pengaduan_pelapor_idx": {
+          "name": "pengaduan_pelapor_idx",
+          "columns": [
+            "id_pelapor"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pengaduan_id_kategori_kategori_id_kategori_fk": {
+          "name": "pengaduan_id_kategori_kategori_id_kategori_fk",
+          "tableFrom": "pengaduan",
+          "tableTo": "kategori",
+          "columnsFrom": [
+            "id_kategori"
+          ],
+          "columnsTo": [
+            "id_kategori"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pengaduan_id_pelapor_pengguna_id_pengguna_fk": {
+          "name": "pengaduan_id_pelapor_pengguna_id_pengguna_fk",
+          "tableFrom": "pengaduan",
+          "tableTo": "pengguna",
+          "columnsFrom": [
+            "id_pelapor"
+          ],
+          "columnsTo": [
+            "id_pengguna"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "pengaturan_publik": {
+      "name": "pengaturan_publik",
+      "columns": {
+        "id_pengaturan": {
+          "name": "id_pengaturan",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "nama_properti": {
+          "name": "nama_properti",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "pengaturan_properti_idx": {
+          "name": "pengaturan_properti_idx",
+          "columns": [
+            "nama_properti"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "pengguna": {
+      "name": "pengguna",
+      "columns": {
+        "id_pengguna": {
+          "name": "id_pengguna",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "peran": {
+          "name": "peran",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'pelapor'"
+        },
+        "aktif": {
+          "name": "aktif",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "pengguna_email_idx": {
+          "name": "pengguna_email_idx",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "riwayat_status": {
+      "name": "riwayat_status",
+      "columns": {
+        "id_riwayat": {
+          "name": "id_riwayat",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "id_pengaduan": {
+          "name": "id_pengaduan",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id_pengguna": {
+          "name": "id_pengguna",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "catatan": {
+          "name": "catatan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(unixepoch())"
+        }
+      },
+      "indexes": {
+        "riwayat_pengaduan_idx": {
+          "name": "riwayat_pengaduan_idx",
+          "columns": [
+            "id_pengaduan"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "riwayat_status_id_pengaduan_pengaduan_id_pengaduan_fk": {
+          "name": "riwayat_status_id_pengaduan_pengaduan_id_pengaduan_fk",
+          "tableFrom": "riwayat_status",
+          "tableTo": "pengaduan",
+          "columnsFrom": [
+            "id_pengaduan"
+          ],
+          "columnsTo": [
+            "id_pengaduan"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "riwayat_status_id_pengguna_pengguna_id_pengguna_fk": {
+          "name": "riwayat_status_id_pengguna_pengguna_id_pengguna_fk",
+          "tableFrom": "riwayat_status",
+          "tableTo": "pengguna",
+          "columnsFrom": [
+            "id_pengguna"
+          ],
+          "columnsTo": [
+            "id_pengguna"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

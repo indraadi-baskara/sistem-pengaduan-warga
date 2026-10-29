@@ -1,0 +1,89 @@
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import * as schema from "./schema";
+import { hashPassword } from "../lib/auth";
+
+const url = process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL || "file:./data/lapor.db";
+const authToken = process.env.TURSO_AUTH_TOKEN || process.env.NUXT_TURSO_AUTH_TOKEN || undefined;
+
+async function main() {
+  const client = createClient({ url, authToken });
+  const db = drizzle(client, { schema });
+
+  console.log(`[seed] connecting to ${url.replace(/\/\/.*@/, "//***@")}`);
+
+  // 1. kategori defaults
+  const defaultKategori = [
+    "Fasilitas Umum",
+    "Kebersihan Lingkungan",
+    "Jalan dan Saluran Air",
+    "Penerangan",
+    "Keamanan",
+    "Lainnya",
+  ];
+  for (const nama of defaultKategori) {
+    try {
+      await db.insert(schema.kategori).values({ nama }).onConflictDoNothing();
+    } catch (e: any) {
+      console.warn(`[seed] kategori '${nama}' warn:`, e.message?.slice(0, 120));
+    }
+  }
+  console.log(`[seed] kategori: ${defaultKategori.length} ensured`);
+
+  // 2. pengaturan_publik defaults (FR-07)
+  const defaultProps: Array<[string, boolean]> = [
+    ["kategori", true],
+    ["lokasi", true],
+    ["deskripsi", true],
+    ["lampiran", true],
+    ["riwayat", true],
+  ];
+  for (const [namaProperti, tampilPublik] of defaultProps) {
+    try {
+      await db.insert(schema.pengaturanPublik).values({ namaProperti, tampilPublik }).onConflictDoNothing();
+    } catch (e: any) {
+      console.warn(`[seed] pengaturan '${namaProperti}' warn:`, e.message?.slice(0, 120));
+    }
+  }
+  console.log(`[seed] pengaturan_publik: ${defaultProps.length} ensured`);
+
+  // 3. admin seed — idempotent by email
+  const adminEmail = (process.env.SEED_ADMIN_EMAIL || "admin@laporwarga.local").toLowerCase();
+  const adminPass = process.env.SEED_ADMIN_PASSWORD || "Admin123!";
+  const existing = await db.select().from(schema.pengguna).where((await import("drizzle-orm")).eq(schema.pengguna.email, adminEmail));
+  if (!existing.length) {
+    const pwHash = await hashPassword(adminPass);
+    await db.insert(schema.pengguna).values({
+      nama: "Administrator",
+      email: adminEmail,
+      password: pwHash,
+      peran: "admin",
+      aktif: true,
+    });
+    console.log(`[seed] admin created: ${adminEmail} / ${adminPass}`);
+  } else {
+    console.log(`[seed] admin exists: ${adminEmail}`);
+  }
+
+  // 4. demo pengurus (optional)
+  const pengurusEmail = "pengurus@laporwarga.local";
+  const pengurusExisting = await db.select().from(schema.pengguna).where((await import("drizzle-orm")).eq(schema.pengguna.email, pengurusEmail));
+  if (!pengurusExisting.length) {
+    const pwHash = await hashPassword("Pengurus123!");
+    await db.insert(schema.pengguna).values({
+      nama: "Pengurus Wilayah",
+      email: pengurusEmail,
+      password: pwHash,
+      peran: "pengurus",
+      aktif: true,
+    });
+    console.log(`[seed] pengurus created: ${pengurusEmail} / Pengurus123!`);
+  }
+
+  console.log("[seed] done");
+}
+
+main().catch((e) => {
+  console.error("[seed] failed:", e);
+  process.exit(1);
+});

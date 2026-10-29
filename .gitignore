@@ -25,3 +25,7 @@ logs
 
 # VSC
 .history
+# lapor-warga local DB + blobs
+data/lapor.db
+.data/
+.env
