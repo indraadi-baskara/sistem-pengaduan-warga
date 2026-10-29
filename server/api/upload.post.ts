@@ -1,6 +1,6 @@
 import { requireAuth } from "../utils/auth";
 
-// POST /api/upload — lampiran helper (Netlify Blobs when available, else local key)
+// POST /api/upload — lampiran helper (Netlify Blobs when available, else local .data/blobs)
 // Body: multipart/form-data with field "file"
 // Returns: { kunciStorage, namaFile, mimeType, ukuran }
 export default defineEventHandler(async (event) => {
@@ -20,20 +20,40 @@ export default defineEventHandler(async (event) => {
   const ext = file.filename?.split(".").pop() || "bin";
   const key = `lampiran/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
-  // Try Netlify Blobs; fallback to in-memory key (DB stores key only per spec)
+  let stored = false;
+  let storeError = "";
+
+  // 1) Try Netlify Blobs (prod). Requires @netlify/blobs dep + NETLIFY_BLOBS_CONTEXT on Functions.
   try {
-    // Dynamic import — only available on Netlify runtime
-    const { getStore } = await import("@netlify/blobs" as any);
+    const { getStore } = await import("@netlify/blobs");
     const store = getStore("lampiran");
-    await store.set(key, file.data as any, { metadata: { mimeType: file.type ?? "application/octet-stream" } });
-  } catch {
-    // Local dev: write to .data/blobs for debugging (optional)
+    await store.set(key, file.data as any);
+    stored = true;
+    console.log(`[upload] blobs set ok: ${key} (${file.data.length}b)`);
+  } catch (e: any) {
+    storeError = e?.message?.slice(0, 300) || String(e).slice(0, 300);
+    console.warn(`[upload] blobs set failed: ${storeError}`);
+  }
+
+  // 2) Local fallback: .data/blobs (dev only — ephemeral on Netlify, don't rely)
+  if (!stored) {
     try {
       const { writeFile, mkdir } = await import("node:fs/promises");
       const { join } = await import("node:path");
       await mkdir(join(process.cwd(), ".data", "blobs", "lampiran"), { recursive: true });
       await writeFile(join(process.cwd(), ".data", "blobs", key), file.data);
-    } catch {}
+      stored = true;
+      console.log(`[upload] local fallback write ok: ${key}`);
+    } catch (e: any) {
+      console.error(`[upload] local fallback failed: ${e?.message}`);
+    }
+  }
+
+  if (!stored) {
+    throw createError({
+      statusCode: 500,
+      message: `Storage unavailable — blobs: ${storeError || "unknown"} (check Netlify Blobs enabled, see netlify.toml)`,
+    });
   }
 
   return {

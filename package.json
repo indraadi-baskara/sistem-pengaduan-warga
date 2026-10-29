@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
+    "@netlify/blobs": "^11.1.7",
     "@nuxt/image": "^2.0.0",
     "@tailwindcss/vite": "^4.0.16",
     "bcryptjs": "^3.0.3",
