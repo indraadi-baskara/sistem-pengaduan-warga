@@ -1,5 +1,68 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Helvetica", "sans-serif";
+  /* Brand & neutral — §01 */
+  --color-primary: #1976F3;
+  --color-primary-hover: #0B63CE;
+  --color-primary-soft: #EAF6FF;
+  --color-light-blue: #D6EAF5;
+  --color-sky-tint: #EAF6FF;
+  --color-surface: #FFFFFF;
+  --color-ink: #111827;
+  --color-muted: #6B7280;
+  --color-border: #DCE8F1;
+  --color-border-soft: #E5EDF5;
+
+  /* Semantic — §01 */
+  --color-success-bg: #DCFCE7;
+  --color-success-fg: #166534;
+  --color-warning-bg: #FFF7CC;
+  --color-warning-fg: #92400E;
+  --color-danger-bg: #FEE2E2;
+  --color-danger-fg: #991B1B;
+  --color-info-bg: #DBEAFE;
+  --color-info-fg: #1E40AF;
+
+  /* Status */
+  --color-status-selesai-bg: #DCFCE7;
+  --color-status-selesai-fg: #166534;
+  --color-status-proses-bg: #FEF9C3;
+  --color-status-proses-fg: #A16207;
+  --color-status-tolak-bg: #FEE2E2;
+  --color-status-tolak-fg: #991B1B;
+
+  --font-display: "Inter", "Helvetica", "Arial", sans-serif;
+  --font-body: "Inter", "Helvetica", "Arial", sans-serif;
+
+  --radius-card: 12px;
+  --radius-panel: 20px;
+  --radius-pill: 999px;
+
+  --shadow-card: 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-panel: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+/* Base */
+html { scrollbar-gutter: stable; }
+body {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background: #F1F6FB;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Focus ring — a11y floor */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Scrollbar subtle */
+* { scrollbar-width: thin; scrollbar-color: #CBD5E1 transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
