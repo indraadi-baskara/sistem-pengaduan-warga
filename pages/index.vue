@@ -3,7 +3,7 @@ definePageMeta({ layout: 'public' })
 useHead({ title: 'Pengaduan Masyarakat — Pendrikan Kidul' })
 const { list } = usePengaduan()
 const kategoriList = ref<any[]>([])
-const form = reactive({ judul: '', idKategori: '', deskripsi: '', lokasi: 'Jl. Bima Raya 1, Pendrikan Kidul' })
+const form = reactive({ judul: '', idKategori: '', deskripsi: '', lokasi: 'Jl. Bima Raya 1, Pendrikan Kidul', tampilPublik: true })
 const file = ref<File|null>(null)
 const submitting = ref(false)
 const toast = ref<{type:'success'|'error';msg:string}|null>(null)
@@ -25,8 +25,7 @@ async function onSubmit() {
       const up:any = await $fetch('/api/upload', { method:'POST', body: fd })
       lampiran = [{ namaFile: up.namaFile, kunciStorage: up.kunciStorage, mimeType: up.mimeType, ukuran: up.ukuran }]
     }
-    // backend expects idKategori numeric, lokasi, deskripsi; we map judul into deskripsi prefix
-    const payload = { idKategori: Number(form.idKategori), lokasi: form.lokasi, deskripsi: `${form.judul}\n\n${form.deskripsi}`, tampilPublik: true, lampiran }
+    const payload = { idKategori: Number(form.idKategori), lokasi: form.lokasi, deskripsi: `${form.judul}\n\n${form.deskripsi}`, tampilPublik: form.tampilPublik, lampiran }
     const res:any = await $fetch('/api/pengaduan', { method:'POST', body: payload })
     toast.value = { type:'success', msg: `Berhasil! Kode pelacakan: ${res.kode}` }
     form.judul=''; form.deskripsi=''; file.value=null
@@ -54,6 +53,11 @@ async function onSubmit() {
           <AppSelect v-model="form.idKategori" label="Kategori Pengaduan" placeholder="Pilih Kategori Pengaduan" :options="kategoriList.map((k:any)=>({value:String(k.id), label:k.nama}))" required />
           <AppTextarea v-model="form.deskripsi" label="Deskripsi Pengaduan" placeholder="Jelaskan detail pengaduan anda..." required :rows="5" />
           <AppUpload v-model="file" label="Unggah Bukti" required />
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" v-model="form.tampilPublik" class="w-4 h-4 rounded border-[#DCE8F1] text-[#1976F3]" />
+            Tampilkan di daftar publik
+            <span v-if="!form.tampilPublik" class="text-xs text-muted">(hanya saya & pengelola yang bisa lihat)</span>
+          </label>
           <AppButton size="lg" block :loading="submitting" @click="onSubmit"><Icon name="lucide:send" size="18" /> Kirim Pengaduan</AppButton>
         </div>
       </div>
@@ -61,7 +65,7 @@ async function onSubmit() {
       <!-- Right: recent + stats -->
       <div class="space-y-4">
         <div class="bg-white rounded-2xl border border-[#DCE8F1] shadow-card p-5">
-          <div class="flex items-center justify-between"><h3 class="font-extrabold">Pengaduan Terbaru</h3><NuxtLink to="/pengaduan/riwayat" class="text-xs text-[#1976F3]">Lihat semua</NuxtLink></div>
+          <div class="flex items-center justify-between"><h3 class="font-extrabold">Pengaduan Terbaru</h3><NuxtLink to="/publik" class="text-xs text-[#1976F3]">Lihat semua</NuxtLink></div>
           <div v-if="!recent.length" class="py-8 text-center text-sm text-muted">Belum ada pengaduan publik</div>
           <div v-else class="mt-2">
             <div v-for="it in recent" :key="it.id" class="flex items-center justify-between gap-3 py-3 border-b border-[#E5EDF5] last:border-0">

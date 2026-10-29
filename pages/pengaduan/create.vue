@@ -2,7 +2,7 @@
 definePageMeta({ layout: 'dashboard', middleware: 'auth' })
 useHead({ title: 'Buat Pengaduan — Pengaduan Masyarakat' })
 const kategoriList = ref<any[]>([])
-const form = reactive({ judul: '', idKategori: '', deskripsi: '', lokasi: '' })
+const form = reactive({ judul: '', idKategori: '', deskripsi: '', lokasi: '', tampilPublik: true })
 const file = ref<File|null>(null)
 const submitting = ref(false)
 const toast = ref<{type:'success'|'error';msg:string}|null>(null)
@@ -17,7 +17,7 @@ async function onSubmit() {
       const up:any = await $fetch('/api/upload', { method:'POST', body: fd })
       lampiran = [{ namaFile: up.namaFile, kunciStorage: up.kunciStorage, mimeType: up.mimeType, ukuran: up.ukuran }]
     }
-    const payload = { idKategori: Number(form.idKategori), lokasi: form.lokasi, deskripsi: `${form.judul}\n\n${form.deskripsi}`, tampilPublik: true, lampiran }
+    const payload = { idKategori: Number(form.idKategori), lokasi: form.lokasi, deskripsi: `${form.judul}\n\n${form.deskripsi}`, tampilPublik: form.tampilPublik, lampiran }
     const res:any = await $fetch('/api/pengaduan', { method:'POST', body: payload })
     toast.value = { type:'success', msg: `Berhasil! Kode: ${res.kode}` }
     setTimeout(()=>navigateTo('/pengaduan/riwayat'), 900)
@@ -38,6 +38,11 @@ async function onSubmit() {
           <AppInput v-model="form.lokasi" label="Lokasi Kejadian" placeholder="Jl. Bima Raya 1 No ..." required />
           <AppTextarea v-model="form.deskripsi" label="Deskripsi Pengaduan" placeholder="Jelaskan detail pengaduan anda..." required :rows="5" />
           <AppUpload v-model="file" label="Unggah Bukti" required />
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" v-model="form.tampilPublik" class="w-4 h-4 rounded border-[#DCE8F1] text-[#1976F3]" />
+            Tampilkan di daftar publik
+            <span v-if="!form.tampilPublik" class="text-xs text-muted">(hanya saya & pengelola yang bisa lihat)</span>
+          </label>
           <AppButton size="lg" block :loading="submitting" @click="onSubmit"><Icon name="lucide:send" size="18" /> Kirim Pengaduan</AppButton>
         </div>
       </div>

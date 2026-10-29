@@ -18,6 +18,8 @@ const menuOpen = ref(false)
       </div>
       <nav class="hidden md:flex items-center gap-5 text-sm">
         <NuxtLink to="/" class="font-semibold text-[#1976F3]">Beranda</NuxtLink>
+        <NuxtLink to="/publik" class="text-muted hover:text-ink">Publik</NuxtLink>
+        <NuxtLink to="/lacak" class="text-muted hover:text-ink">Lacak</NuxtLink>
         <NuxtLink to="/informasi" class="text-muted hover:text-ink">Informasi</NuxtLink>
         <NuxtLink to="/faq" class="text-muted hover:text-ink">FAQ</NuxtLink>
       </nav>

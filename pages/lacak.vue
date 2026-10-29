@@ -5,11 +5,21 @@ const kode = ref('')
 const result = ref<any>(null)
 const err = ref('')
 const loading = ref(false)
+function toDate(v: any) {
+  if (v == null) return null
+  const n = Number(v)
+  if (Number.isNaN(n)) return new Date(v)
+  return new Date(n < 1e12 ? n * 1000 : n)
+}
+function fmtDT(v: any) {
+  const d = toDate(v)
+  return d ? d.toLocaleString('id-ID') : '-'
+}
 async function doLacak() {
   err.value=''; result.value=null
   if (!kode.value.trim()) { err.value='Masukkan kode pelacakan'; return }
   loading.value=true
-  try { result.value = await $fetch<any>(`/api/pengaduan/kode/${kode.value.trim()}`) } catch(e:any){ err.value = e?.data?.statusMessage || 'Kode tidak ditemukan' } finally { loading.value=false }
+  try { result.value = await $fetch<any>(`/api/pengaduan/kode/${kode.value.trim()}`) } catch(e:any){ err.value = e?.data?.statusMessage || e?.data?.message || 'Kode tidak ditemukan' } finally { loading.value=false }
 }
 </script>
 <template>
@@ -25,10 +35,10 @@ async function doLacak() {
       <div v-if="result" class="mt-6 space-y-3">
         <div class="flex items-center justify-between"><p class="font-bold">{{ result.kode }}</p><StatusBadge :status="result.status" /></div>
         <p class="text-sm whitespace-pre-wrap">{{ result.deskripsi }}</p>
-        <p class="text-xs text-muted">{{ result.lokasi }} · {{ new Date(result.dibuatPada).toLocaleString('id-ID') }}</p>
+        <p class="text-xs text-muted">{{ result.lokasi }} · {{ fmtDT(result.createdAt) }}</p>
         <div v-if="result.riwayat?.length" class="pt-3 border-t border-[#E5EDF5]">
           <p class="text-sm font-semibold">Riwayat</p>
-          <ul class="mt-2 space-y-2"><li v-for="r in result.riwayat" :key="r.id" class="text-xs bg-[#F8FAFF] border border-[#E5EDF5] rounded-lg px-3 py-2"><b class="capitalize">{{ r.statusBaru }}</b> — {{ r.catatan || '-' }} <span class="text-muted">({{ new Date(r.dibuatPada).toLocaleString('id-ID') }})</span></li></ul>
+          <ul class="mt-2 space-y-2"><li v-for="r in result.riwayat" :key="r.id" class="text-xs bg-[#F8FAFF] border border-[#E5EDF5] rounded-lg px-3 py-2"><b class="capitalize">{{ r.status }}</b> — {{ r.catatan || '-' }} <span class="text-muted">({{ fmtDT(r.createdAt) }})</span></li></ul>
         </div>
       </div>
     </div>

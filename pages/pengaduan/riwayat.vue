@@ -5,6 +5,16 @@ const items = ref<any[]>([])
 const q = ref('')
 const statusFilter = ref('')
 const loading = ref(true)
+function toDate(v: any) {
+  if (v == null) return null
+  const n = Number(v)
+  if (Number.isNaN(n)) return new Date(v)
+  return new Date(n < 1e12 ? n * 1000 : n)
+}
+function fmtDate(v: any) {
+  const d = toDate(v)
+  return d ? d.toLocaleDateString('id-ID') : '-'
+}
 async function load() {
   loading.value=true
   try {
@@ -52,7 +62,7 @@ const filtered = computed(()=>{
             <div class="min-w-0">
               <p class="text-sm font-bold truncate max-w-[360px]">{{ it.deskripsi?.split('\n')[0] || it.kode }}</p>
               <p class="text-xs text-muted">{{ it.kode }} · {{ it.lokasi }}</p>
-              <p class="text-[11px] text-muted">{{ new Date(it.dibuatPada).toLocaleDateString('id-ID') }}</p>
+              <p class="text-[11px] text-muted">{{ fmtDate(it.createdAt) }}</p>
             </div>
           </div>
           <StatusBadge :status="it.status" />
