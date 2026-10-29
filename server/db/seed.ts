@@ -1,18 +1,21 @@
-import { createClient } from "@libsql/client";
-import { drizzle } from "drizzle-orm/libsql";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 import { hashPassword } from "../lib/auth";
+import { eq } from "drizzle-orm";
 
-const url = process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL || "file:./data/lapor.db";
-const authToken = process.env.TURSO_AUTH_TOKEN || process.env.NUXT_TURSO_AUTH_TOKEN || undefined;
+const url = process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL;
+if (!url) {
+  console.error("[seed] Missing DATABASE_URL (set NUXT_DATABASE_URL or DATABASE_URL)");
+  process.exit(1);
+}
 
 async function main() {
-  const client = createClient({ url, authToken });
-  const db = drizzle(client, { schema });
+  const client = neon(url!);
+  const db = drizzle(client as any, { schema });
 
-  console.log(`[seed] connecting to ${url.replace(/\/\/.*@/, "//***@")}`);
+  console.log(`[seed] connecting to ${url!.replace(/:[^:@/]*@/, ":***@").slice(0, 80)}`);
 
-  // 1. kategori defaults
   const defaultKategori = [
     "Fasilitas Umum",
     "Kebersihan Lingkungan",
@@ -30,7 +33,6 @@ async function main() {
   }
   console.log(`[seed] kategori: ${defaultKategori.length} ensured`);
 
-  // 2. pengaturan_publik defaults (FR-07)
   const defaultProps: Array<[string, boolean]> = [
     ["kategori", true],
     ["lokasi", true],
@@ -47,10 +49,9 @@ async function main() {
   }
   console.log(`[seed] pengaturan_publik: ${defaultProps.length} ensured`);
 
-  // 3. admin seed — idempotent by email
   const adminEmail = (process.env.SEED_ADMIN_EMAIL || "admin@laporwarga.local").toLowerCase();
   const adminPass = process.env.SEED_ADMIN_PASSWORD || "Admin123!";
-  const existing = await db.select().from(schema.pengguna).where((await import("drizzle-orm")).eq(schema.pengguna.email, adminEmail));
+  const existing = await db.select().from(schema.pengguna).where(eq(schema.pengguna.email, adminEmail));
   if (!existing.length) {
     const pwHash = await hashPassword(adminPass);
     await db.insert(schema.pengguna).values({
@@ -65,9 +66,8 @@ async function main() {
     console.log(`[seed] admin exists: ${adminEmail}`);
   }
 
-  // 4. demo pengurus (optional)
   const pengurusEmail = "pengurus@laporwarga.local";
-  const pengurusExisting = await db.select().from(schema.pengguna).where((await import("drizzle-orm")).eq(schema.pengguna.email, pengurusEmail));
+  const pengurusExisting = await db.select().from(schema.pengguna).where(eq(schema.pengguna.email, pengurusEmail));
   if (!pengurusExisting.length) {
     const pwHash = await hashPassword("Pengurus123!");
     await db.insert(schema.pengguna).values({
