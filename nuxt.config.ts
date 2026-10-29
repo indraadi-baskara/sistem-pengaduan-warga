@@ -15,8 +15,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     // Secrets NEVER inlined — read from NUXT_* env at runtime via Nitro
-    // DB: NUXT_DATABASE_URL (Turso/libSQL URL) or DATABASE_URL fallback
-    // Local: file:./data/lapor.db is used when no env is set (see server/db/index.ts)
+    // DB: NUXT_DATABASE_URL (Neon Postgres) or DATABASE_URL fallback
     databaseUrl: "",
     session: { password: "" },
   },
