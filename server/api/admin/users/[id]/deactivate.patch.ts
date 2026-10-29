@@ -2,7 +2,7 @@ import { z } from "zod";
 import { getDb } from "../../../../db";
 import { pengguna } from "../../../../db/schema";
 import { requireAdmin } from "../../../../utils/auth";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const Body = z.object({ aktif: z.boolean() });
 
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   if (admin.id === id && !aktif) throw createError({ statusCode: 400, message: "Cannot deactivate own account" });
 
   const db = getDb();
-  const [updated] = await db.update(pengguna).set({ aktif, updatedAt: new Date() }).where(eq(pengguna.id, id)).returning();
+  const [updated] = await db.update(pengguna).set({ aktif, updatedAt: sql`extract(epoch from now())::int` as any }).where(eq(pengguna.id, id)).returning();
   if (!updated) throw createError({ statusCode: 404, message: "User not found" });
   return { id: updated.id, aktif: updated.aktif };
 });

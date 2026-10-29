@@ -2,7 +2,7 @@ import { z } from "zod";
 import { getDb } from "../../../../db";
 import { pengaduan } from "../../../../db/schema";
 import { requirePengurusOrAdmin } from "../../../../utils/auth";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const Body = z.object({ tampilPublik: z.boolean() });
 
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const { tampilPublik } = Body.parse(await readBody(event));
 
   const db = getDb();
-  const [updated] = await db.update(pengaduan).set({ tampilPublik, updatedAt: new Date() }).where(eq(pengaduan.id, id)).returning();
+  const [updated] = await db.update(pengaduan).set({ tampilPublik, updatedAt: sql`extract(epoch from now())::int` as any }).where(eq(pengaduan.id, id)).returning();
   if (!updated) throw createError({ statusCode: 404, message: "Pengaduan not found" });
   return updated;
 });

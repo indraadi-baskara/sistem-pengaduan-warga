@@ -8,6 +8,20 @@ let pool: Pool | null = null;
 let db: ReturnType<typeof drizzlePg> | ReturnType<typeof drizzleHttp> | null = null;
 let dbMode: "pg" | "http" | null = null;
 
+function sanitizeDbUrl(url: string): string {
+  // Strip surrounding quotes (dotenv may preserve them) and Neon channel_binding
+  let u = url.trim();
+  if ((u.startsWith('"') && u.endsWith('"')) || (u.startsWith("'") && u.endsWith("'"))) u = u.slice(1, -1);
+  if (!u.includes("channel_binding")) return u;
+  try {
+    const parsed = new URL(u);
+    parsed.searchParams.delete("channel_binding");
+    return parsed.toString();
+  } catch {
+    return u.replace(/[&?]channel_binding=[^&]*/g, "").replace(/\?&/, "?");
+  }
+}
+
 function getDatabaseUrl(): string {
   try {
     const cfg = useRuntimeConfig() as any;
@@ -26,7 +40,7 @@ export async function getDbAsync() {
 
 export function getDb() {
   if (db) return db as any;
-  const url = getDatabaseUrl();
+  const url = sanitizeDbUrl(getDatabaseUrl());
   const client = neon(url);
   (client as any).__isNeonHttp = true;
   db = drizzleHttp(client as any, { schema }) as any;

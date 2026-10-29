@@ -79,9 +79,16 @@ export default defineEventHandler(async (event) => {
   };
 
   let created: any;
-  // drizzle-orm/libsql transaction
-  if ((db as any).transaction) {
-    created = await (db as any).transaction(doInsert);
+  // neon-http driver throws "No transactions support" — use sequential inserts
+  // pg driver would support transaction, but http is default for serverless
+  const isNeonHttp = (db as any).__isNeonHttp ?? (db as any).constructor?.name === "NeonHttpDatabase";
+  if (!isNeonHttp && typeof (db as any).transaction === "function") {
+    try {
+      created = await (db as any).transaction(doInsert);
+    } catch (e: any) {
+      if (e.message?.includes("No transactions support")) created = await doInsert(db);
+      else throw e;
+    }
   } else {
     created = await doInsert(db);
   }

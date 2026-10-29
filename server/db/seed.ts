@@ -4,14 +4,28 @@ import * as schema from "./schema";
 import { hashPassword } from "../lib/auth";
 import { eq } from "drizzle-orm";
 
-const url = process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL;
-if (!url) {
+function sanitizeDbUrl(url: string): string {
+  let u = url.trim();
+  if ((u.startsWith('"') && u.endsWith('"')) || (u.startsWith("'") && u.endsWith("'"))) u = u.slice(1, -1);
+  if (!u.includes("channel_binding")) return u;
+  try {
+    const parsed = new URL(u);
+    parsed.searchParams.delete("channel_binding");
+    return parsed.toString();
+  } catch {
+    return u.replace(/[&?]channel_binding=[^&]*/g, "").replace(/\?&/, "?");
+  }
+}
+
+const rawUrl = process.env.NUXT_DATABASE_URL || process.env.DATABASE_URL;
+if (!rawUrl) {
   console.error("[seed] Missing DATABASE_URL (set NUXT_DATABASE_URL or DATABASE_URL)");
   process.exit(1);
 }
+const url = sanitizeDbUrl(rawUrl);
 
 async function main() {
-  const client = neon(url!);
+  const client = neon(url);
   const db = drizzle(client as any, { schema });
 
   console.log(`[seed] connecting to ${url!.replace(/:[^:@/]*@/, ":***@").slice(0, 80)}`);
