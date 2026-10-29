@@ -35,6 +35,16 @@ export default defineEventHandler(async (event) => {
     .returning();
 
   const safeUser = { id: created.id, nama: created.nama, email: created.email, peran: created.peran };
-  await setUserSession(event, { user: safeUser } as any);
+  try {
+    await setUserSession(event, { user: safeUser } as any);
+  } catch (e: any) {
+    console.error("[auth/register] setUserSession failed:", e?.message?.slice(0, 300));
+    throw createError({
+      statusCode: 500,
+      message: e?.message?.includes("Password string too short")
+        ? "Server misconfigured: NUXT_SESSION_PASSWORD must be >=32 chars (check Netlify env)"
+        : `Session error: ${e?.message || "unknown"}`,
+    });
+  }
   return { user: safeUser };
 });

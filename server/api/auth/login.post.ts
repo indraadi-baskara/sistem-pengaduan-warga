@@ -26,6 +26,18 @@ export default defineEventHandler(async (event) => {
   if (!ok) throw createError({ statusCode: 401, message: "Invalid email or password" });
 
   const safeUser = { id: u.id, nama: u.nama, email: u.email, peran: u.peran };
-  await setUserSession(event, { user: safeUser } as any);
+  try {
+    await setUserSession(event, { user: safeUser } as any);
+  } catch (e: any) {
+    console.error("[auth/login] setUserSession failed:", e?.message?.slice(0, 300));
+    // iron-webcrypto throws "Password string too short" when NUXT_SESSION_PASSWORD <32
+    // Surface as 500 with actionable hint (don't leak secret)
+    throw createError({
+      statusCode: 500,
+      message: e?.message?.includes("Password string too short")
+        ? "Server misconfigured: NUXT_SESSION_PASSWORD must be >=32 chars (check Netlify env)"
+        : `Session error: ${e?.message || "unknown"}`,
+    });
+  }
   return { user: safeUser };
 });
