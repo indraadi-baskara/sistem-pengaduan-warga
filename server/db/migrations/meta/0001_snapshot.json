@@ -1,0 +1,584 @@
+{
+  "id": "a4b7536d-50e8-49c4-b580-863e7493b852",
+  "prevId": "d19ca331-c828-4614-a342-9ccf1b71d49e",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.file_store": {
+      "name": "file_store",
+      "schema": "",
+      "columns": {
+        "kunci_storage": {
+          "name": "kunci_storage",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "data_base64": {
+          "name": "data_base64",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ukuran": {
+          "name": "ukuran",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.kategori": {
+      "name": "kategori",
+      "schema": "",
+      "columns": {
+        "id_kategori": {
+          "name": "id_kategori",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        }
+      },
+      "indexes": {
+        "kategori_nama_idx": {
+          "name": "kategori_nama_idx",
+          "columns": [
+            {
+              "expression": "nama",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.lampiran": {
+      "name": "lampiran",
+      "schema": "",
+      "columns": {
+        "id_lampiran": {
+          "name": "id_lampiran",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_pengaduan": {
+          "name": "id_pengaduan",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nama_file": {
+          "name": "nama_file",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kunci_storage": {
+          "name": "kunci_storage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ukuran": {
+          "name": "ukuran",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        }
+      },
+      "indexes": {
+        "lampiran_pengaduan_idx": {
+          "name": "lampiran_pengaduan_idx",
+          "columns": [
+            {
+              "expression": "id_pengaduan",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "lampiran_id_pengaduan_pengaduan_id_pengaduan_fk": {
+          "name": "lampiran_id_pengaduan_pengaduan_id_pengaduan_fk",
+          "tableFrom": "lampiran",
+          "tableTo": "pengaduan",
+          "columnsFrom": [
+            "id_pengaduan"
+          ],
+          "columnsTo": [
+            "id_pengaduan"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pengaduan": {
+      "name": "pengaduan",
+      "schema": "",
+      "columns": {
+        "id_pengaduan": {
+          "name": "id_pengaduan",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "kode_pelacakan": {
+          "name": "kode_pelacakan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_kategori": {
+          "name": "id_kategori",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_pelapor": {
+          "name": "id_pelapor",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lokasi": {
+          "name": "lokasi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deskripsi": {
+          "name": "deskripsi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'diterima'"
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        }
+      },
+      "indexes": {
+        "pengaduan_kode_idx": {
+          "name": "pengaduan_kode_idx",
+          "columns": [
+            {
+              "expression": "kode_pelacakan",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pengaduan_status_idx": {
+          "name": "pengaduan_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pengaduan_kategori_idx": {
+          "name": "pengaduan_kategori_idx",
+          "columns": [
+            {
+              "expression": "id_kategori",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pengaduan_pelapor_idx": {
+          "name": "pengaduan_pelapor_idx",
+          "columns": [
+            {
+              "expression": "id_pelapor",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pengaduan_id_kategori_kategori_id_kategori_fk": {
+          "name": "pengaduan_id_kategori_kategori_id_kategori_fk",
+          "tableFrom": "pengaduan",
+          "tableTo": "kategori",
+          "columnsFrom": [
+            "id_kategori"
+          ],
+          "columnsTo": [
+            "id_kategori"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pengaduan_id_pelapor_pengguna_id_pengguna_fk": {
+          "name": "pengaduan_id_pelapor_pengguna_id_pengguna_fk",
+          "tableFrom": "pengaduan",
+          "tableTo": "pengguna",
+          "columnsFrom": [
+            "id_pelapor"
+          ],
+          "columnsTo": [
+            "id_pengguna"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pengaturan_publik": {
+      "name": "pengaturan_publik",
+      "schema": "",
+      "columns": {
+        "id_pengaturan": {
+          "name": "id_pengaturan",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nama_properti": {
+          "name": "nama_properti",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {
+        "pengaturan_properti_idx": {
+          "name": "pengaturan_properti_idx",
+          "columns": [
+            {
+              "expression": "nama_properti",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.pengguna": {
+      "name": "pengguna",
+      "schema": "",
+      "columns": {
+        "id_pengguna": {
+          "name": "id_pengguna",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nama": {
+          "name": "nama",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "peran": {
+          "name": "peran",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pelapor'"
+        },
+        "aktif": {
+          "name": "aktif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        }
+      },
+      "indexes": {
+        "pengguna_email_idx": {
+          "name": "pengguna_email_idx",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.riwayat_status": {
+      "name": "riwayat_status",
+      "schema": "",
+      "columns": {
+        "id_riwayat": {
+          "name": "id_riwayat",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_pengaduan": {
+          "name": "id_pengaduan",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id_pengguna": {
+          "name": "id_pengguna",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "catatan": {
+          "name": "catatan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "extract(epoch from now())::int"
+        }
+      },
+      "indexes": {
+        "riwayat_pengaduan_idx": {
+          "name": "riwayat_pengaduan_idx",
+          "columns": [
+            {
+              "expression": "id_pengaduan",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "riwayat_status_id_pengaduan_pengaduan_id_pengaduan_fk": {
+          "name": "riwayat_status_id_pengaduan_pengaduan_id_pengaduan_fk",
+          "tableFrom": "riwayat_status",
+          "tableTo": "pengaduan",
+          "columnsFrom": [
+            "id_pengaduan"
+          ],
+          "columnsTo": [
+            "id_pengaduan"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "riwayat_status_id_pengguna_pengguna_id_pengguna_fk": {
+          "name": "riwayat_status_id_pengguna_pengguna_id_pengguna_fk",
+          "tableFrom": "riwayat_status",
+          "tableTo": "pengguna",
+          "columnsFrom": [
+            "id_pengguna"
+          ],
+          "columnsTo": [
+            "id_pengguna"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

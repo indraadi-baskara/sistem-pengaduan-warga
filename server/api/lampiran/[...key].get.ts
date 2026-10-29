@@ -50,7 +50,22 @@ export default defineEventHandler(async (event) => {
     console.warn(`[lampiran] blobs get failed: ${e?.message?.slice(0, 300)}`);
   }
 
-  // 2) Local .data/blobs fallback (dev)
+  // 2) DB file_store fallback (prod fix — persists across Function invocations)
+  try {
+    const { fileStore } = await import("../../db/schema");
+    const [fs] = await db.select().from(fileStore).where(eq(fileStore.kunciStorage, key));
+    if (fs?.dataBase64) {
+      console.log(`[lampiran] db file_store hit: ${key} (${fs.ukuran}b)`);
+      setHeader(event, "Content-Type", fs.mimeType || row.mimeType || "application/octet-stream");
+      setHeader(event, "Content-Disposition", `inline; filename="${row.namaFile}"`);
+      setHeader(event, "Cache-Control", "public, max-age=86400");
+      return Buffer.from(fs.dataBase64, "base64");
+    }
+  } catch (e: any) {
+    console.warn(`[lampiran] db file_store miss: ${e?.message?.slice(0, 200)}`);
+  }
+
+  // 3) Local .data/blobs fallback (dev)
   try {
     const { readFile } = await import("node:fs/promises");
     const { join } = await import("node:path");

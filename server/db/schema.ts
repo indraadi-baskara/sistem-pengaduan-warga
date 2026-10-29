@@ -93,6 +93,23 @@ export const lampiran = pgTable(
 );
 
 // ---------------------------------------------------------------------------
+// file_store — backing for lampiran when Netlify Blobs unavailable (prod fix)
+// Stores base64 to survive ephemeral Functions filesystem.
+// ---------------------------------------------------------------------------
+export const fileStore = pgTable(
+  "file_store",
+  {
+    kunciStorage: text("kunci_storage").primaryKey(),
+    dataBase64: text("data_base64").notNull(),
+    mimeType: text("mime_type"),
+    ukuran: integer("ukuran"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`extract(epoch from now())::int`),
+  },
+);
+
+// ---------------------------------------------------------------------------
 // pengaturan_publik — FR-07, UC-12
 // ---------------------------------------------------------------------------
 export const pengaturanPublik = pgTable(

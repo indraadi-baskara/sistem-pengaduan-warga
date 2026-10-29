@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
   let stored = false;
   let storeError = "";
 
-  // 1) Try Netlify Blobs (prod). Requires @netlify/blobs dep + NETLIFY_BLOBS_CONTEXT on Functions.
+  // 1) Try Netlify Blobs (prod — auto-injected NETLIFY_BLOBS_CONTEXT on Functions if enabled)
   try {
     const { getStore } = await import("@netlify/blobs");
     const store = getStore("lampiran");
@@ -35,7 +35,26 @@ export default defineEventHandler(async (event) => {
     console.warn(`[upload] blobs set failed: ${storeError}`);
   }
 
-  // 2) Local fallback: .data/blobs (dev only — ephemeral on Netlify, don't rely)
+  // 2) DB fallback: file_store — survives ephemeral Functions fs, works even without Blobs enabled
+  if (!stored) {
+    try {
+      const { getDb } = await import("../db");
+      const { fileStore } = await import("../db/schema");
+      const db = getDb();
+      await db.insert(fileStore).values({
+        kunciStorage: key,
+        dataBase64: Buffer.from(file.data).toString("base64"),
+        mimeType: file.type ?? "application/octet-stream",
+        ukuran: file.data.length,
+      });
+      stored = true;
+      console.log(`[upload] db file_store ok: ${key} (${file.data.length}b)`);
+    } catch (e: any) {
+      console.warn(`[upload] db file_store failed: ${e?.message?.slice(0, 300)}`);
+    }
+  }
+
+  // 3) Local fs fallback (dev only — ephemeral on Netlify)
   if (!stored) {
     try {
       const { writeFile, mkdir } = await import("node:fs/promises");
@@ -52,7 +71,7 @@ export default defineEventHandler(async (event) => {
   if (!stored) {
     throw createError({
       statusCode: 500,
-      message: `Storage unavailable — blobs: ${storeError || "unknown"} (check Netlify Blobs enabled, see netlify.toml)`,
+      message: `Storage unavailable — blobs: ${storeError || "unknown"} (enable Netlify Blobs in UI or check DB)`,
     });
   }
 
