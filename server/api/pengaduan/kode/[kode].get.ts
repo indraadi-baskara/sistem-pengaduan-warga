@@ -2,10 +2,13 @@ import { getDb } from "../../../db";
 import { pengaduan, kategori, lampiran, riwayatStatus } from "../../../db/schema";
 import { eq } from "drizzle-orm";
 import { loadVisibilityMap, filterPublicProps } from "../../../utils/visibility";
+import { getAuthUser } from "../../../utils/auth";
+import { enforceRateLimit } from "../../../utils/rateLimit";
 
 // GET /api/pengaduan/kode/:kode — UC-02 tracking (public, no auth)
-// Hidden complaints: only kode + status visible; not-found => 404.
+// Hidden complaints: only kode + status visible unless owner/staff.
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, { windowMs: 60_000, max: 30, key: "kode" });
   const kode = getRouterParam(event, "kode")?.trim();
   if (!kode) throw createError({ statusCode: 400, message: "Kode required" });
 
@@ -13,8 +16,13 @@ export default defineEventHandler(async (event) => {
   const [p] = await db.select().from(pengaduan).where(eq(pengaduan.kode, kode));
   if (!p) throw createError({ statusCode: 404, message: "Pengaduan not found" });
 
+  const auth = getAuthUser(event);
+  const isOwner = auth?.id === p.idPelapor;
+  const isStaff = auth?.peran === "pengurus" || auth?.peran === "admin";
+  const canSeeHidden = isOwner || isStaff;
+
   const visMap = await loadVisibilityMap();
-  const isHidden = !p.tampilPublik;
+  const isHidden = !p.tampilPublik && !canSeeHidden;
 
   // Resolve kategori
   let kat: any = null;
@@ -29,11 +37,8 @@ export default defineEventHandler(async (event) => {
   if (!isHidden) {
     if (visMap.get("lampiran") !== false) lamp = await db.select().from(lampiran).where(eq(lampiran.idPengaduan, p.id));
     if (visMap.get("riwayat") !== false) riwayat = await db.select().from(riwayatStatus).where(eq(riwayatStatus.idPengaduan, p.id));
-  } else {
-    // hidden: still allow riwayat for status tracking? spec: detail only kode+status for hidden
-    // Minimal riwayat (status progression) is okay but spec says "hanya memuat kode dan status"
-    // We keep it empty for hidden to respect spec strictly.
   }
+  // isHidden: spec strict => empty lamp/riwayat, only kode+status via filter
 
   const obj: any = {
     id: p.id,
@@ -48,5 +53,7 @@ export default defineEventHandler(async (event) => {
     riwayat,
   };
 
+  // Owner/staff bypass visMap entirely (full object)
+  if (canSeeHidden && !p.tampilPublik) return obj;
   return filterPublicProps(obj, visMap, isHidden);
 });

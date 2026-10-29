@@ -1,15 +1,16 @@
 import { getDb } from "../../../db";
 import { pengaduan, kategori, pengguna } from "../../../db/schema";
 import { requirePengurusOrAdmin } from "../../../utils/auth";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql, ilike, or } from "drizzle-orm";
 
 // GET /api/admin/pengaduan — UC-08: pengurus/admin dashboard list with filters
-// Query: ?status=&kategori=&limit=&offset=
+// Query: ?status=&kategori=&q=&limit=&offset=
 export default defineEventHandler(async (event) => {
   requirePengurusOrAdmin(event);
   const q = getQuery(event);
   const status = q.status as string | undefined;
   const kategoriId = q.kategori ? Number(q.kategori) : undefined;
+  const search = (q.q as string | undefined)?.trim();
   const limit = Math.min(Number(q.limit) || 20, 100);
   const offset = Number(q.offset) || 0;
 
@@ -17,6 +18,16 @@ export default defineEventHandler(async (event) => {
   const conditions: any[] = [];
   if (status && ["diterima", "diproses", "selesai"].includes(status)) conditions.push(eq(pengaduan.status, status as any));
   if (kategoriId) conditions.push(eq(pengaduan.idKategori, kategoriId));
+  if (search) {
+    conditions.push(or(ilike(pengaduan.lokasi, `%${search}%`), ilike(pengaduan.deskripsi, `%${search}%`), ilike(pengaduan.kode, `%${search}%`)) as any);
+  }
+
+  const whereClause = conditions.length ? and(...conditions) : undefined;
+
+  const [countRow] = whereClause
+    ? await db.select({ cnt: sql<number>`count(*)::int` }).from(pengaduan).where(whereClause)
+    : await db.select({ cnt: sql<number>`count(*)::int` }).from(pengaduan);
+  const total = Number(countRow?.cnt ?? 0);
 
   const base = db
     .select({ pengaduan, kategoriNama: kategori.nama, pelaporNama: pengguna.nama })
@@ -24,8 +35,8 @@ export default defineEventHandler(async (event) => {
     .leftJoin(kategori, eq(pengaduan.idKategori, kategori.id))
     .leftJoin(pengguna, eq(pengaduan.idPelapor, pengguna.id));
 
-  const rows = conditions.length
-    ? await base.where(and(...conditions)).orderBy(desc(pengaduan.createdAt)).limit(limit).offset(offset)
+  const rows = whereClause
+    ? await base.where(whereClause).orderBy(desc(pengaduan.createdAt)).limit(limit).offset(offset)
     : await base.orderBy(desc(pengaduan.createdAt)).limit(limit).offset(offset);
 
   return {
@@ -41,6 +52,7 @@ export default defineEventHandler(async (event) => {
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     })),
+    total,
     limit,
     offset,
   };

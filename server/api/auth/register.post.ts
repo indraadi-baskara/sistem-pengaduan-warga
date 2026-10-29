@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { hashPassword } from "../../lib/auth";
 import { ensureMigrated } from "../../utils/migrate";
+import { enforceRateLimit } from "../../utils/rateLimit";
 import { getDb } from "../../db";
 import { pengguna } from "../../db/schema";
 import { eq } from "drizzle-orm";
@@ -12,6 +13,7 @@ const Body = z.object({
 });
 
 export default defineEventHandler(async (event) => {
+  enforceRateLimit(event, { windowMs: 60_000, max: 5, key: "auth:register" });
   await ensureMigrated();
   const body = Body.parse(await readBody(event));
   const db = getDb();
