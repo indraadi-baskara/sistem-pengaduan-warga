@@ -35,7 +35,10 @@ useHead({ title: () => item.value ? `${item.value.kode} — Detail` : 'Detail Pe
           <div class="rounded-xl bg-[#F8FAFF] border border-[#E5EDF5] p-3"><p class="text-xs text-muted">Tanggal</p><p class="font-semibold">{{ fmtDate(item.createdAt) }}</p></div>
         </div>
         <div class="mt-4"><p class="text-sm font-semibold">Deskripsi</p><p class="text-sm text-muted whitespace-pre-wrap mt-1">{{ item.deskripsi }}</p></div>
-        <div v-if="item.lampiran?.length" class="mt-4"><p class="text-sm font-semibold">Lampiran</p><div class="mt-2 flex flex-wrap gap-2"><span v-for="l in item.lampiran" :key="l.id" class="px-3 py-1 rounded-full bg-[#EAF6FF] text-xs">{{ l.namaFile }}</span></div></div>
+        <div v-if="item.lampiran?.length" class="mt-4"><p class="text-sm font-semibold">Lampiran</p><div class="mt-2 grid gap-3"><div v-for="l in item.lampiran" :key="l.id" class="rounded-xl border border-[#E5EDF5] overflow-hidden bg-[#F8FAFF]">
+          <img v-if="l.mimeType?.startsWith('image/')" :src="`/api/lampiran/${l.kunciStorage}`" :alt="l.namaFile" class="w-full max-h-96 object-contain bg-white" loading="lazy" />
+          <div class="px-3 py-2 flex items-center justify-between gap-2 text-xs"><span class="truncate">{{ l.namaFile }}</span><a :href="`/api/lampiran/${l.kunciStorage}`" target="_blank" class="shrink-0 px-3 py-1 rounded-full bg-[#1976F3] text-white font-semibold">Lihat / Unduh</a></div>
+        </div></div></div>
       </div>
       <div class="bg-white rounded-2xl border border-[#DCE8F1] p-6 shadow-card">
         <h2 class="font-extrabold">Riwayat Status</h2>
