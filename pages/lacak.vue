@@ -36,6 +36,15 @@ async function doLacak() {
         <div class="flex items-center justify-between"><p class="font-bold">{{ result.kode }}</p><StatusBadge :status="result.status" /></div>
         <p class="text-sm whitespace-pre-wrap">{{ result.deskripsi }}</p>
         <p class="text-xs text-muted">{{ result.lokasi }} · {{ fmtDT(result.createdAt) }}</p>
+        <div v-if="result.lampiran?.length" class="pt-3">
+          <p class="text-xs font-semibold text-muted">Lampiran</p>
+          <div class="mt-2 grid gap-2">
+            <div v-for="l in result.lampiran" :key="l.id" class="rounded-xl overflow-hidden border border-[#E5EDF5] bg-[#F8FAFF]">
+              <img v-if="l.mimeType?.startsWith('image/')" :src="`/api/lampiran/${l.kunciStorage}`" :alt="l.namaFile" class="w-full max-h-72 object-contain bg-white" loading="lazy" />
+              <div class="px-3 py-2 flex items-center justify-between gap-2 text-xs"><span class="truncate">{{ l.namaFile }}</span><a :href="`/api/lampiran/${l.kunciStorage}`" target="_blank" class="px-3 py-1 rounded-full bg-[#1976F3] text-white font-semibold">Lihat / Unduh</a></div>
+            </div>
+          </div>
+        </div>
         <div v-if="result.riwayat?.length" class="pt-3 border-t border-[#E5EDF5]">
           <p class="text-sm font-semibold">Riwayat</p>
           <ul class="mt-2 space-y-2"><li v-for="r in result.riwayat" :key="r.id" class="text-xs bg-[#F8FAFF] border border-[#E5EDF5] rounded-lg px-3 py-2"><b class="capitalize">{{ r.status }}</b> — {{ r.catatan || '-' }} <span class="text-muted">({{ fmtDT(r.createdAt) }})</span></li></ul>

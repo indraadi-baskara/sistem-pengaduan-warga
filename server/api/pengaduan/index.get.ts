@@ -1,6 +1,6 @@
 import { getDb } from "../../db";
-import { pengaduan, kategori } from "../../db/schema";
-import { eq, desc, and, sql, ilike, or } from "drizzle-orm";
+import { pengaduan, kategori, lampiran } from "../../db/schema";
+import { eq, desc, and, sql, ilike, or, inArray } from "drizzle-orm";
 import { loadVisibilityMap, filterPublicProps } from "../../utils/visibility";
 
 // GET /api/pengaduan — public list (UC-01)
@@ -43,16 +43,28 @@ export default defineEventHandler(async (event) => {
     .limit(limit)
     .offset(offset);
 
+  // Lampiran for thumbnails (one query for all ids)
+  let lampByPengaduan = new Map<number, any[]>();
+  if (visMap.get("lampiran") !== false && rows.length) {
+    const ids = rows.map((r) => r.pengaduan.id);
+    const lamps = await db.select().from(lampiran).where(inArray(lampiran.idPengaduan, ids));
+    for (const l of lamps) {
+      const arr = lampByPengaduan.get(l.idPengaduan) || [];
+      arr.push(l);
+      lampByPengaduan.set(l.idPengaduan, arr);
+    }
+  }
+
   const mapped = rows.map(({ pengaduan: p, kategoriNama }) => {
     const obj: any = {
       id: p.id,
       kode: p.kode,
       status: p.status,
       createdAt: p.createdAt,
-      // toggleable
       kategori: kategoriNama ? { id: p.idKategori, nama: kategoriNama } : null,
       lokasi: p.lokasi,
       deskripsi: p.deskripsi,
+      lampiran: lampByPengaduan.get(p.id) ?? [],
     };
     return filterPublicProps(obj, visMap, false);
   });

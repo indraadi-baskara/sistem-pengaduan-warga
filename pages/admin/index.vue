@@ -38,7 +38,10 @@ async function toggleVis(it:any){
       <div v-else-if="!items.length" class="p-8 text-center text-sm text-muted">Tidak ada data</div>
       <div v-else class="divide-y divide-[#E5EDF5]">
         <div v-for="it in items" :key="it.id" class="p-4 flex flex-wrap items-center justify-between gap-3">
-          <div class="min-w-0"><p class="text-sm font-bold">{{ it.kode }} · <span class="text-muted font-normal">{{ it.lokasi }}</span></p><p class="text-xs text-muted truncate max-w-[520px]">{{ it.deskripsi?.split('\n')[0] }}</p></div>
+          <div class="flex gap-3 min-w-0">
+            <div class="w-14 h-14 rounded-xl bg-[#EAF6FF] overflow-hidden shrink-0 grid place-items-center"><img v-if="it.lampiran?.[0]?.kunciStorage" :src="`/api/lampiran/${it.lampiran[0].kunciStorage}`" class="w-full h-full object-cover" alt="" /><Icon v-else name="lucide:image" size="18" class="text-muted" /></div>
+            <div class="min-w-0"><p class="text-sm font-bold">{{ it.kode }} · <span class="text-muted font-normal">{{ it.lokasi }}</span></p><p class="text-xs text-muted truncate max-w-[520px]">{{ it.deskripsi?.split('\n')[0] }}</p><NuxtLink v-if="it.lampiran?.length" :to="`/pengaduan/${it.id}`" class="text-[11px] text-[#1976F3]">📎 {{ it.lampiran.length }} lampiran</NuxtLink></div>
+          </div>
           <div class="flex items-center gap-2">
             <StatusBadge :status="it.status" />
             <select :value="it.status" @change="setStatus(it.id, ($event.target as HTMLSelectElement).value)" class="h-8 rounded-full border border-[#DCE8F1] bg-white px-2 text-xs">

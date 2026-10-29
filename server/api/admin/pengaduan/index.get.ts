@@ -1,7 +1,7 @@
 import { getDb } from "../../../db";
-import { pengaduan, kategori, pengguna } from "../../../db/schema";
+import { pengaduan, kategori, pengguna, lampiran } from "../../../db/schema";
 import { requirePengurusOrAdmin } from "../../../utils/auth";
-import { eq, desc, and, sql, ilike, or } from "drizzle-orm";
+import { eq, desc, and, sql, ilike, or, inArray } from "drizzle-orm";
 
 // GET /api/admin/pengaduan — UC-08: pengurus/admin dashboard list with filters
 // Query: ?status=&kategori=&q=&limit=&offset=
@@ -39,6 +39,18 @@ export default defineEventHandler(async (event) => {
     ? await base.where(whereClause).orderBy(desc(pengaduan.createdAt)).limit(limit).offset(offset)
     : await base.orderBy(desc(pengaduan.createdAt)).limit(limit).offset(offset);
 
+  // lampiran for admin thumbnails
+  let lampBy = new Map<number, any[]>();
+  if (rows.length) {
+    const ids = rows.map((r) => r.pengaduan.id);
+    const lamps = await db.select().from(lampiran).where(inArray(lampiran.idPengaduan, ids));
+    for (const l of lamps) {
+      const arr = lampBy.get(l.idPengaduan) || [];
+      arr.push(l);
+      lampBy.set(l.idPengaduan, arr);
+    }
+  }
+
   return {
     data: rows.map(({ pengaduan: p, kategoriNama, pelaporNama }) => ({
       id: p.id,
@@ -48,7 +60,8 @@ export default defineEventHandler(async (event) => {
       lokasi: p.lokasi,
       deskripsi: p.deskripsi,
       kategori: kategoriNama ? { id: p.idKategori, nama: kategoriNama } : null,
-      pelaporNama, // admin sees reporter name internally (never exposed on public routes)
+      lampiran: lampBy.get(p.id) ?? [],
+      pelaporNama,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     })),

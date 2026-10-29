@@ -70,7 +70,7 @@ async function onSubmit() {
           <div v-else class="mt-2">
             <div v-for="it in recent" :key="it.id" class="flex items-center justify-between gap-3 py-3 border-b border-[#E5EDF5] last:border-0">
               <div class="min-w-0 flex gap-3">
-                <div class="w-12 h-12 rounded-lg bg-[#EAF6FF] shrink-0 overflow-hidden"><img v-if="it.image" :src="it.image" class="w-full h-full object-cover" /><Icon v-else name="lucide:image" class="w-full h-full p-3 text-muted" /></div>
+                <div class="w-12 h-12 rounded-lg bg-[#EAF6FF] shrink-0 overflow-hidden grid place-items-center"><img v-if="it.lampiran?.[0]?.kunciStorage" :src="`/api/lampiran/${it.lampiran[0].kunciStorage}`" class="w-full h-full object-cover" alt="" /><Icon v-else name="lucide:image" size="18" class="text-muted" /></div>
                 <div class="min-w-0"><p class="text-sm font-semibold truncate max-w-[200px]">{{ it.deskripsi?.split('\n')[0] || it.kode }}</p><p class="text-xs text-muted flex items-center gap-1"><Icon name="lucide:map-pin" size="12" />{{ it.lokasi }}</p></div>
               </div>
               <StatusBadge :status="it.status" />
